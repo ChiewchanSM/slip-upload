@@ -22,20 +22,25 @@ body{
     padding:30px;
     border-radius:12px;
     width:90%;
-    max-width:400px;
+    max-width:420px;
     text-align:center;
     box-shadow:0 10px 25px rgba(0,0,0,0.2);
 }
 
 h2{
-    margin-bottom:20px;
+    margin-bottom:10px;
+}
+
+p{
+    color:#555;
+    font-size:14px;
 }
 
 .upload-box{
     border:2px dashed #ccc;
     padding:20px;
     border-radius:10px;
-    margin-bottom:20px;
+    margin:20px 0;
 }
 
 input[type=file]{
@@ -46,7 +51,7 @@ button{
     background:#4facfe;
     color:white;
     border:none;
-    padding:12px 20px;
+    padding:12px;
     border-radius:8px;
     font-size:16px;
     cursor:pointer;
@@ -57,10 +62,19 @@ button:hover{
     background:#2f8cff;
 }
 
-.note{
-    font-size:13px;
-    color:#666;
-    margin-top:10px;
+.preview{
+    margin-top:15px;
+}
+
+.preview img{
+    width:100%;
+    border-radius:8px;
+}
+
+.success{
+    color:green;
+    font-weight:bold;
+    margin-top:15px;
 }
 
 </style>
@@ -71,21 +85,76 @@ button:hover{
 <div class="container">
 
 <h2>Upload Payment Slip</h2>
+<p>Take a photo or choose from your gallery</p>
 
-<form action="YOUR_WEBHOOK_URL" method="post" enctype="multipart/form-data">
+<form id="uploadForm" enctype="multipart/form-data">
 
 <div class="upload-box">
-<p>Select or take a photo of your payment slip</p>
-<input type="file" name="file" accept="image/*" capture="environment">
+
+<input 
+type="file" 
+name="file" 
+accept="image/*"
+id="fileInput"
+required
+>
+
+<div class="preview" id="preview"></div>
+
 </div>
 
 <button type="submit">Upload Slip</button>
 
 </form>
 
-<p class="note">Powered by FinTech Automation System</p>
+<div class="success" id="successMsg"></div>
 
 </div>
+
+<script>
+
+const form = document.getElementById("uploadForm");
+const fileInput = document.getElementById("fileInput");
+const preview = document.getElementById("preview");
+const successMsg = document.getElementById("successMsg");
+
+fileInput.addEventListener("change", function(){
+
+    const file = this.files[0];
+
+    if(file){
+        const reader = new FileReader();
+
+        reader.onload = function(e){
+            preview.innerHTML = "<img src='"+e.target.result+"'>";
+        }
+
+        reader.readAsDataURL(file);
+    }
+
+});
+
+form.addEventListener("submit", async function(e){
+
+    e.preventDefault();
+
+    const file = fileInput.files[0];
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    await fetch("https://chiewchan-sm.app.n8n.cloud/webhook/0a1ab4b1-6f67-4322-8b77-e9dfb0c4d409",{
+        method:"POST",
+        body:formData
+    });
+
+    successMsg.innerText = "Slip uploaded successfully!";
+    preview.innerHTML = "";
+    fileInput.value="";
+
+});
+
+</script>
 
 </body>
 </html>
